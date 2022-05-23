@@ -1,5 +1,12 @@
 <template>
-<h1>hello</h1>
+<div id="app">
+  <main>
+    <div class="search-box">
+      <input type="text" name="" id="" 
+      class="search-bar" placeholder="Search..."/>
+    </div>
+  </main>
+</div>
 </template>
 
 <script>
