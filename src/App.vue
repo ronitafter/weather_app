@@ -2,12 +2,19 @@
 <div id="app">
   <main>
     <div class="search-box">
-      <input type="text" name="" id="" 
-      class="search-bar" placeholder="Search..."/>
+      <input 
+      type="text" 
+      name="" 
+      id="" 
+      class="search-bar" 
+      placeholder="Search..."
+      v-model="query"
+      @keypress="fetchWeather"
+      />
     </div>
-    <div class="weather-wrap">
+    <div class="weather-wrap" v-if="typeof weather.main !='undefined'">
       <div class="location-box">
-        <div class="location">Tel Aviv, Israel</div>
+        <div class="location">{{weather.name}}, {{weather.sys.country}}</div>
         <div class="date">Tuesday 24 May 2022</div>
       </div>
       <div class="weather-box">
@@ -18,16 +25,30 @@
   </main>
 </div>
 </template>
-
 <script>
 export default {
   name: 'App',
   data(){
     return{
-      api_key: 'a58280c47755ba696d4317a40a156d56'
+      api_key: 'd8a0444c26bccf115b262149b408334f',
+      url_base: 'https://api.openweathermap.org/data/2.5/',
+         query: '',
+      weather: {}
+    }
+  },
+  methods:{
+    fetchWeather(e){
+      if(e.key =="Enter"){
+      fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
+      .then(res => {
+        return res.json();
+      }).then(this.setResults); 
+      }
+    },
+    setResults(results){
+      this.weather=results;
     }
   }
-
 }
 </script>
 <style>
@@ -84,5 +105,35 @@ main{
   text-align: center;
   text-shadow: 1px 3px rgba(0, 0, 0, 0.25);
 
+}
+.location-box .date{ 
+  color: #fff;
+  font-size: 20px;
+  font-weight: 300;
+  text-align: center;
+  font-style: italic;
+}
+.weather-box{
+  text-align: center;
+}
+.weather-box .temp{
+  display: inline-block;
+  padding: 10px 25px;
+  color: #fff;
+  font-size: 102px;
+  font-weight: 900;
+  text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  margin:30px 0px;
+  box-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+}
+.weather-box .weather{
+  display: inline-block;
+  padding: 10px 25px;
+  color: #fff;
+  font-size: 102px;
+  font-weight: 900;
+  text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
 </style>
