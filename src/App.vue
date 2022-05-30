@@ -31,8 +31,8 @@ export default {
   name: 'App',
   data(){
     return{
-      api_key: 'd8a0444c26bccf115b262149b408334f',
-      url_base: 'https://api.openweathermap.org/data/2.5/',
+      api_key: 'yt1dtI2ZeeNj6j2D7HNnVAXe9fhmj0UU',
+      url_base: 'http://dataservice.accuweather.com/locations/v1/cities/autocomplete',
          query: '',
       weather: {}
     }
@@ -40,7 +40,8 @@ export default {
   methods:{
     fetchWeather(e){
       if(e.key =="Enter"){
-      fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
+      fetch(`${this.url_base}?apikey=${this.api_key}&q=${this.query}`)
+      //${this.url_base}&units=metric&APPID?apikey=${this.api_key}&q=${this.query}
       .then(res => {
         return res.json();
       }).then(this.setResults); 
