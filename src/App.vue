@@ -1,61 +1,73 @@
 <template>
-<div id="app" :class="typeof weather.main !='undefined' 
-&& weather.main.temp > 16 ? 'warm' : ''">
-  <main>
-    <div class="title-box">
-      <div class="title">Please type a city name to get current weather forcast</div>
-    </div>
-    <div class="search-box">
-      <input 
-      type="text" 
-      name="" 
-      id="" 
-      class="search-bar" 
-      placeholder="Search..."
-      v-model="query"
-      @keypress="fetchWeather"
-      @keydown="autocomplete"
-      />
-    </div>
-    {{ getApiKeys  }}
-    <div class="weather-wrap" v-if="typeof weather.main !='undefined'">
-      <div class="location-box">
-        <div class="location">{{weather.name}}, {{weather.sys.country}}</div>
-        <div class="date">{{dateBuilder()}}</div>
+  <div id="app" :class="typeof weather.main !='undefined' 
+  && weather.main.temp > 16 ? 'warm' : ''">
+    <main>
+      <div class="autocomlete">
+        <div class="title-box">
+          <div class="title">Please type a city name to get current weather forcast</div>
+        </div>
+        <div class="search-box">
+          <input type="text" name="" id="" class="search-bar" placeholder="Search..." v-model="query"
+            @keypress="fetchWeather" @keyup="autocompleteCityName" />
+        </div>
+        <div class="autocomplete-items">
+          <div v-for="(suggestion, index) in suggestions" :key="index">
+            {{ suggestion.LocalizedName }}, {{ suggestion.Coutry.LocalizedName }} - {{ suggestion.key }}
+          </div>
+        </div>
       </div>
-      <div class="weather-box">
-        <div class="temp">{{Math.round(weather.main.temp)}}</div>
-        <div class="weather">{{weather.weather[0].main}}</div>
+      <div class="weather-wrap" v-if="typeof weather.main !='undefined'">
+        <div class="location-box">
+          <div class="location">{{weather.name}}, {{weather.sys.country}}</div>
+          <div class="date">{{dateBuilder()}}</div>
+        </div>
+        <div class="weather-box">
+          <div class="temp">{{Math.round(weather.main.temp)}}</div>
+          <div class="weather">{{weather.weather[0].main}}</div>
+        </div>
       </div>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
 </template>
 <script>
 export default {
   name: 'App',
   data(){
     return{
-      apiKey: 'd8a0444c26bccf115b262149b408334f',
-      urlBase: 'https://api.openweathermap.org/data/2.5/',
+      apiKey: '',
+      urlBase: 'http://dataservice.accuweather.com/currentconditions/v1/',
          query: '',
       weather: {},
-      autocompleteUrl: '/locations/v1/cities/autocomplete?apikey=yt1dtI2ZeeNj6j2D7HNnVAXe9fhmj0UU&'
+      autocompleteUrl: 'http://dataservice.accuweather.com/locations/v1/cities/autocomplete',
+      hasSuggestions: false,
+      suggestions: [],
+      proxyurl: "https://cors-anywhere.herokuapp.com/",
     }
   },
-  computed: {
-    getApiKeys() {
-      console.log('*** process? ', process.env)
-      return process.env.VUE_APP_ACU_KEY
-    }
+  mounted(){
+    this.apiKey=process.env.VUE_APP_ACU_KEY
   },
   methods:{
+    async autocompleteCityName () {
+      const headers = new Headers
+      
+      headers.append('Access-Control-Allow-Origin', 'http://localhost:8080');
+      headers.append('Access-Control-Allow-Credentials', 'true');
+      if (this.query.length > 1) {
+        const response = await fetch(`${this.autocompleteUrl}?apiKey=${this.apiKey}&q=${this.query}`, {headers, mode: "cors"})
+
+        const data = await response.json()
+
+        this.hasSuggestions = data.length // If data.length is zero we'll get a false
+        this.suggestions = data
+      }  
+    },
     fetchWeather(e){
       if(e.key =="Enter"){
-      fetch(`${this.urlBase}weather?q=${this.query}&units=metric&APPID=${this.apiKey}`)
-      .then(res => {
-        return res.json();
-      }).then(this.setResults); 
+      // fetch(`${this.urlBase}weather?q=${this.query}&units=metric&APPID=${this.apiKey}`)
+      // .then(res => {
+      //   return res.json();
+      // }).then(this.setResults); 
       }
     },
     setResults(results){
@@ -182,4 +194,43 @@ main{
   font-weight: 900;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
+
+.autocomplete {
+  /* the container must be positioned relative: */ 
+  width: 100%;
+  position: relative;
+  display: inline-block;
+}
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /* position the autocomplete items to be the same width as the container: */ 
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-items div:hover {
+  /* when hovering an item: */
+  background-color: #e9e9e9;
+}
+
+.autocomplete-active {
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+
+
+
 </style>
